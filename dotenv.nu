@@ -11,7 +11,7 @@ export def --env dotenv [query?: string] {
         let label = relative_pwd $file
         $"($file)\t($label)"
         }
-      | pretty_fzf $query  --preview-cmd="bat --color=always")
+      | pretty_fzf $query  --preview-cmd="bat --color=always {1} --file-name={2}")
   open $file | from toml | load-env
   print $"Loaded (ansi blue_italic)(relative_pwd $file)(ansi reset)"
 }
