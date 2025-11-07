@@ -1,6 +1,4 @@
 export  def --wrapped tv-from-list [...rest]: list -> string {
-
-  print ...$rest
   let result = $in | str join "\n" | tv ...$rest 
 
   if ( $result | is-empty ) {
