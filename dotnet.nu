@@ -1,4 +1,5 @@
 source fzf.nu 
+# todo use tv here too
 
 def pick-csproj [query?: string] {
     glob **/*.csproj -d 5
