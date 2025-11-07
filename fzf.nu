@@ -6,23 +6,22 @@ export def pretty_fzf [query?: string, --preview-cmd (-p): string] {
     | str join "\n"
     )
 
-  mut cmd = {}
+  mut results = {}
 
   if  not ( $preview_cmd | is-empty)  {
-    $cmd = (
+    $results = (
       $entries
       | fzf --delimiter='\t' --with-nth 2 --layout=reverse --height 10 --select-1 --query $"($query)" --preview $"($preview_cmd)"
       | complete
       )
   } else {
-    $cmd = (
+    $results = (
       $entries
       | fzf --delimiter='\t' --with-nth 2 --layout=reverse --height 10 --select-1 --query $"($query)" 
       | complete
       )
   }
 
-  let results = $cmd | complete
 
   if $results.exit_code != 0 {
       error make {msg: "No matches found" } -u
