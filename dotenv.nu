@@ -9,7 +9,7 @@ export def --env dotenv [query?: string] {
         relative_pwd $file
         }
       | str join "\n"
-      | tv --select-1 --preview="bat -n --color=always {}")
+      | tv --input=$"($query)" --select-1 --preview="bat -n --color=always {}")
   open $file | from toml | load-env
   print $"Loaded (ansi blue_italic)(relative_pwd $file)(ansi reset)"
 }
