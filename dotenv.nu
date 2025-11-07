@@ -1,5 +1,3 @@
-source fzf.nu 
-
 def relative_pwd [file] {
   $file | path expand | path relative-to (pwd | path expand)
 }
@@ -8,10 +6,10 @@ export def --env dotenv [query?: string] {
   let file = (
       glob **/*.env*
       | each {|file| 
-        let label = relative_pwd $file
-        $"($file)\t($label)"
+        relative_pwd $file
         }
-      | pretty_fzf $query  --preview-cmd="bat --color=always {1} --file-name={2}")
+      | str join "\n"
+      | tv --select-1 --preview="bat -n --color=always {}")
   open $file | from toml | load-env
   print $"Loaded (ansi blue_italic)(relative_pwd $file)(ansi reset)"
 }
