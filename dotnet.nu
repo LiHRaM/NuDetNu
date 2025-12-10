@@ -7,7 +7,7 @@ def pick-csproj [query?: string] {
         let doc = try { open $file | from xml } catch { {} }   # ignore bad files
 
         let sdk      = try { $doc.attributes.Sdk? } catch { "" }
-        let outType  = try { $doc.content.PropertyGroup.OutputType? } catch { "" }
+        let outType  = try { (($doc.content | where {|e| $e.tag == 'PropertyGroup'}|first).content | where {|e| $e.tag == 'OutputType'}).content | each {|e| $e.content} | first | first } catch { "" }
 
         (($sdk | str contains 'Web') or                     # web SDK
         (($sdk | str contains 'Microsoft.NET.Sdk') and     # console SDK
