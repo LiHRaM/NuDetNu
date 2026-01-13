@@ -18,7 +18,7 @@ export-env {
         {
           send: ExecuteHostCommand
           cmd: " do {
-            let action = (tv list-channels | lines | filter { $in | str starts-with "\t"} | str join "\n" | tv)
+            let action = tv channels 
             if ($action | is-empty) {
               return
             }

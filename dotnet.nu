@@ -3,7 +3,7 @@ source fzf.nu
 
 def pick-csproj [query?: string] {
     glob **/*.csproj -d 5
-    | filter {|file|
+    | where {|file|
         let doc = try { open $file | from xml } catch { {} }   # ignore bad files
 
         let sdk      = try { $doc.attributes.Sdk? } catch { "" }
