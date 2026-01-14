@@ -18,11 +18,7 @@ export-env {
         {
           send: ExecuteHostCommand
           cmd: " do {
-            let action = tv channels 
-            if ($action | is-empty) {
-              return
-            }
-            let to_insert = (tv $action --no-preview)
+            let to_insert = tv channels 
             if ($to_insert | is-empty) {
               return
             }
