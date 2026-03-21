@@ -1,8 +1,5 @@
-source fzf.nu 
-# todo use tv here too
-
 def pick-csproj [query?: string] {
-    glob **/*.csproj -d 5
+    let options = (glob **/*.csproj -d 5
     | where {|file|
         let doc = try { open $file | from xml } catch { {} }   # ignore bad files
 
@@ -12,12 +9,15 @@ def pick-csproj [query?: string] {
         (($sdk | str contains 'Web') or                     # web SDK
         (($sdk | str contains 'Microsoft.NET.Sdk') and     # console SDK
          ($outType | str contains 'Exe')))
-    }
-    | each {|file| 
-      let label = $file | path dirname | path basename  
-      $"($file)\t($label)"
-      }
-    | pretty_fzf $query
+    })
+
+    # ideally we could ensure that such a channel exists but it's a bit of a hail mary to ensure.
+    let project = ($options
+       | each { |f| $"($f | path parse | get stem)|($f)" }
+       | str join (char newline) | tv -p "bat --style=numbers,grid --color=always {split:|:1}" --source-display="{split:|:0}" --source-output="{split:|:1}" --input $"($query)"
+    )
+ 
+    return $project;
 }
 alias dn = dotnet
 
@@ -31,4 +31,4 @@ def "dn r" [query? :string, ...rest: string] {
   dotnet run --project $project ...$rest
 }
 
-alias "dn b" = dotnet build
+alias "dn" = dotnet

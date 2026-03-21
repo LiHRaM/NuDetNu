@@ -31,4 +31,5 @@ export def pretty_fzf [query?: string, --preview-cmd (-p): string] {
     | split column "\t"
     | get column1
     | first
+    | trim
 }
