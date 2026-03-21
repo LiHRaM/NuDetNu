@@ -12,9 +12,11 @@ def pick-csproj [query?: string] {
     })
 
     # ideally we could ensure that such a channel exists but it's a bit of a hail mary to ensure.
-    let project = ($options
+    let project = (
+      $options
        | each { |f| $"($f | path parse | get stem)|($f)" }
-       | str join (char newline) | tv -p "bat --style=numbers,grid --color=always {split:|:1}" --source-display="{split:|:0}" --source-output="{split:|:1}" --input $"($query)"
+       | str join (char newline)
+       | tv -p "bat --style=numbers,grid --color=always {split:|:1}" --source-display="{split:|:0}" --source-output="{split:|:1}" --input $"($query)" --select-1
     )
  
     return $project;
