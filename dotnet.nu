@@ -33,4 +33,4 @@ def "dn r" [query? :string, ...rest: string] {
   dotnet run --project $project ...$rest
 }
 
-alias "dn" = dotnet
+alias "dn b" = dotnet build
