@@ -1,4 +1,3 @@
-
 # dotest.nu – Pretty wrapper for dotnet test
 #
 # Usage:
@@ -203,6 +202,11 @@ def render-tree [tests: list] {
                 _         => "·"
             }
             print $"    ($icon) ($t.name) (ansi dark_gray)[($t.duration | fmt-dur)](ansi reset)"
+            if ($t.std_out | str trim | is-not-empty) {
+                for line in ($t.std_out | str trim | lines) {
+                    print $"         (ansi dark_gray)│ ($line)(ansi reset)"
+                }
+            }
         }
     }
     | ignore
