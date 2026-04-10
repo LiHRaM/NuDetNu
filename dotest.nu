@@ -157,7 +157,7 @@ def render-failure [t: record] {
     let div      = ("─" | fill -c '─' -w $inner)
  
     # Top border with embedded title and badge
-    print $"(ansi red)┏━(ansi reset)(ansi bold)($title_str)(ansi reset)(ansi red_bold)($badge)(ansi red)($right_hr)┓(ansi reset)"
+    print $"(ansi red)┏━(ansi reset)(ansi red_bold)($title_str)(ansi reset)(ansi red_bold)($badge)(ansi red)($right_hr)┓(ansi reset)"
  
     if ($t.error_msg | str trim | is-not-empty) {
         print $"(ansi red)┃(ansi reset)"
