@@ -58,6 +58,16 @@ def colorize-stack-line []: string -> string {
     $"   (ansi dark_gray)at ($r.capture0)(ansi reset) in (ansi cyan)($r.capture1)(ansi reset)(ansi yellow):line ($r.capture2)(ansi reset)"
 }
  
+# Colorize a build error line:
+#   "/path/File.cs(42,5): error CS1061: ..." → cyan path, yellow :line, red error
+def colorize-build-error []: string -> string {
+    let raw = ($in | str trim)
+    let m = ($raw | parse --regex '^(.+?)\((\d+),\d+\): error (\w+): (.+)$')
+    if ($m | is-empty) { return $"  (ansi red)($raw)(ansi reset)" }
+    let r = ($m | first)
+    $"  (ansi cyan)($r.capture0)(ansi reset)(ansi yellow):($r.capture1)(ansi reset) (ansi red)error ($r.capture2)(ansi reset): ($r.capture3)"
+}
+ 
 # ── TRX parsing ──────────────────────────────────────────────────────────────
  
 # Parse every *.trx in $dir into a flat table of test records
@@ -204,7 +214,8 @@ def render-tree [tests: list] {
             print $"    ($icon) ($t.name) (ansi dark_gray)[($t.duration | fmt-dur)](ansi reset)"
             if ($t.std_out | str trim | is-not-empty) {
                 for line in ($t.std_out | str trim | lines) {
-                    print $"         (ansi dark_gray)│ ($line)(ansi reset)"
+                    print -n $"         (ansi dark_gray)│(ansi reset) "
+                    print $line
                 }
             }
         }
@@ -225,6 +236,7 @@ export def dotest [
     --verbose (-v)    # Show passed/skipped tests in a tree after failure boxes
 ] {
     let trx_dir = (mktemp -d)
+    let err_log = (mktemp)
  
     mut args = [
         "test" "--nologo"
@@ -249,6 +261,10 @@ export def dotest [
             let n = $acc.n + (if $is_pass or $is_fail { 1 } else { 0 })
             let f = $acc.f + (if $is_fail { 1 } else { 0 })
  
+            if ($trimmed | str contains ": error ") {
+                $"($line)\n" | save --append $err_log
+            }
+ 
             let secs      = (((date now) - $t0 | into int) / 1_000_000_000 | into int)
             let count_str = if $n > 0 { $"($n) tests" } else { "building…" }
             let fail_str  = if $f > 0 { $"  (ansi red)($f) failed(ansi reset)" } else { "" }
@@ -264,9 +280,19 @@ export def dotest [
     let elapsed_ms = (((date now) - $t0 | into int) / 1_000_000 | into int)
     let tests      = (parse-trx-dir $trx_dir)
     rm -rf $trx_dir
+    let build_errors = (try { open $err_log | str trim } catch { "" })
+    rm -f $err_log
  
     if ($tests | is-empty) {
-        print $"(ansi yellow)No test results found.(ansi reset) Build may have failed – run (ansi cyan)dotnet test(ansi reset) for details."
+        if ($build_errors | is-not-empty) {
+            print $"\n(ansi red_bold)BUILD FAILED(ansi reset)\n"
+            for line in ($build_errors | lines) {
+                print ($line | colorize-build-error)
+            }
+            print ""
+        } else {
+            print $"(ansi yellow)No test results found.(ansi reset) Build may have failed – run (ansi cyan)dotnet test(ansi reset) for details."
+        }
         return
     }
  
@@ -301,4 +327,11 @@ export def dotest [
  
     let icon = if ($failed | is-not-empty) { $"(ansi red_bold)FAIL(ansi reset)" } else { $"(ansi green_bold)PASS(ansi reset)" }
     print $"\n($icon)  ($parts | str join ', ')  (ansi dark_gray)($elapsed_str)(ansi reset)"
+ 
+    if ($build_errors | is-not-empty) {
+        print $"\n(ansi red_bold)Build errors:(ansi reset)"
+        for line in ($build_errors | lines) {
+            print ($line | colorize-build-error)
+        }
+    }
 }
